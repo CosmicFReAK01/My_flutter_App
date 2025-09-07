@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LaundryMate ER Diagram</title>
+    <script src="https://unpkg.com/mermaid@10.6.1/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .diagram-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .legend {
+            background: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .legend h3 {
+            margin-top: 0;
+            color: #34495e;
+        }
+        .entity-type {
+            display: inline-block;
+            margin: 5px 10px;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .core { background: #3498db; color: white; }
+        .business { background: #e74c3c; color: white; }
+        .support { background: #f39c12; color: white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>LaundryMate App - Entity Relationship Diagram</h1>
+        
+        <div class="diagram-container">
+            <div class="mermaid">
+                erDiagram
+                    USER {
+                        int id PK
+                        string name
+                        string email
+                        string phone
+                        string role
+                        datetime join_date
+                        boolean active
+                    }
+                    
+                    CUSTOMER {
+                        int id PK
+                        int user_id FK
+                        string full_name
+                        string email
+                        string phone
+                        int total_orders
+                        int completed_orders
+                        int pending_orders
+                        datetime last_order_date
+                        string status
+                    }
+                    
+                    CONSUMER {
+                        int id PK
+                        int user_id FK
+                        string shop_name
+                        string address
+                        string description
+                        string specialties
+                        int years_experience
+                        string turnaround_time
+                        boolean doorstep_service
+                        boolean express_service
+                        boolean active
+                        datetime created_at
+                    }
+                    
+                    ADDRESS {
+                        int id PK
+                        int customer_id FK
+                        string type
+                        string name
+                        string phone
+                        string address_line
+                        boolean is_default
+                    }
+                    
+                    SERVICE {
+                        int id PK
+                        int consumer_id FK
+                        string name
+                        string description
+                        decimal price
+                        string unit
+                        string duration
+                        string category
+                        boolean active
+                        datetime created_at
+                    }
+                    
+                    ORDER {
+                        int id PK
+                        string order_number
+                        int customer_id FK
+                        int consumer_id FK
+                        int address_id FK
+                        string status
+                        decimal total_amount
+                        datetime order_date
+                        datetime pickup_date
+                        datetime delivery_date
+                        datetime estimated_delivery
+                        string notes
+                    }
+                    
+                    ORDER_ITEM {
+                        int id PK
+                        int order_id FK
+                        int service_id FK
+                        string title
+                        string provider_name
+                        int quantity
+                        decimal unit_price
+                        decimal total_price
+                        string notes
+                    }
+                    
+                    CART_ITEM {
+                        int id PK
+                        int customer_id FK
+                        string title
+                        string provider_name
+                        string services
+                        string price
+                        datetime added_at
+                    }
+                    
+                    NOTIFICATION {
+                        int id PK
+                        int user_id FK
+                        string title
+                        string message
+                        string type
+                        boolean read
+                        datetime created_at
+                    }
+                    
+                    ANALYTICS {
+                        int id PK
+                        int consumer_id FK
+                        string metric_name
+                        decimal value
+                        string period
+                        datetime recorded_at
+                    }
+
+                    USER ||--o{ CUSTOMER : "can be"
+                    USER ||--o{ CONSUMER : "can be"
+                    
+                    CUSTOMER ||--o{ ADDRESS : "has"
+                    CUSTOMER ||--o{ ORDER : "places"
+                    CUSTOMER ||--o{ CART_ITEM : "has"
+                    CUSTOMER ||--o{ NOTIFICATION : "receives"
+                    
+                    CONSUMER ||--o{ SERVICE : "offers"
+                    CONSUMER ||--o{ ORDER : "fulfills"
+                    CONSUMER ||--o{ NOTIFICATION : "receives"
+                    CONSUMER ||--o{ ANALYTICS : "tracks"
+                    
+                    ORDER ||--o{ ORDER_ITEM : "contains"
+                    ORDER }o--|| ADDRESS : "delivered to"
+                    
+                    SERVICE ||--o{ ORDER_ITEM : "included in"
+                    
+                    USER ||--o{ NOTIFICATION : "receives"
+            </div>
+        </div>
+
+        <div class="legend">
+            <h3>Entity Types</h3>
+            <div class="entity-type core">Core Entities</div>
+            <div class="entity-type business">Business Logic</div>
+            <div class="entity-type support">Supporting Data</div>
+            
+            <h3>Key Relationships</h3>
+            <ul>
+                <li><strong>User Inheritance:</strong> USER → CUSTOMER/CONSUMER (role-based)</li>
+                <li><strong>Order Flow:</strong> CUSTOMER → ORDER → ORDER_ITEM → SERVICE</li>
+                <li><strong>Service Management:</strong> CONSUMER → SERVICE (offerings)</li>
+                <li><strong>Cart System:</strong> CUSTOMER → CART_ITEM → ORDER (checkout)</li>
+                <li><strong>Delivery:</strong> ORDER → ADDRESS (delivery location)</li>
+                <li><strong>Notifications:</strong> USER → NOTIFICATION (system messages)</li>
+                <li><strong>Analytics:</strong> CONSUMER → ANALYTICS (business metrics)</li>
+            </ul>
+
+            <h3>Business Rules</h3>
+            <ul>
+                <li>Each USER can be either CUSTOMER or CONSUMER (role field)</li>
+                <li>CUSTOMER can have multiple ADDRESS entries</li>
+                <li>ORDER links CUSTOMER, CONSUMER, and delivery ADDRESS</li>
+                <li>ORDER contains multiple ORDER_ITEM entries</li>
+                <li>CART_ITEM are temporary until converted to ORDER</li>
+                <li>SERVICE pricing includes unit types (per lb, per item, per load)</li>
+                <li>ORDER status tracks: pending → in-progress → ready → completed</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'default',
+            erDiagram: {
+                diagramPadding: 20,
+                layoutDirection: 'TB',
+                minEntityWidth: 100,
+                minEntityHeight: 75,
+                entitySpacing: 15,
+                curve: 'basis'
+            }
+        });
+    </script>
+</body>
+</html>
